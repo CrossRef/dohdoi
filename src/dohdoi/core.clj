@@ -32,10 +32,12 @@
   (let [dois (dois-in-dir in-dir)]
     (loop [first-lot (take 1000 dois)
 	   rest-lot  (drop 1000 dois)]
-      (let [converted-dois (map #(str prefix %) first-lot)]
+      (let [converted-dois (map #(str prefix %) first-lot)
+	    next-rest-lot (drop 1000 rest-lot)]
 	(spit out-file
 	      (join \newline converted-dois)
 	      :append true)
-	(recur (take 1000 rest-lot) (drop 1000 rest-lot))))))
+	(if (seq next-rest-lot)
+	  (recur (take 1000 rest-lot) next-rest-lot))))))
 
 ; e.g. (take 5000 (dois-in-dir "/Users/karl/Data/conf"))
