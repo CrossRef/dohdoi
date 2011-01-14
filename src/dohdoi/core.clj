@@ -2,18 +2,18 @@
   (:use clojure.java.io clojure.contrib.lazy-xml clojure.string))
 
 (defn events-to-dois
-  [lstream]
-  (loop [dois [] stream lstream]
-    (cond
-     (empty? stream) dois
-     :otherwise
-     (let [type   (:type (first stream))
-	   name   (:name (first stream))
+  [events]
+  (cond
+   (seq events)
+     (let [type   (:type (first events))
+	   name   (:name (first events))
 	   is-doi (and (= :start-element type)
 		       (= :doi name))]
-       (cond
-	is-doi     (recur (conj dois (:str (second stream))) (rest stream))
-	:otherwise (recur dois (rest stream)))))))
+       (if is-doi
+	 (lazy-seq (cons (:str (second events))
+			 (events-to-dois (rest events))))
+	 (recur (rest events))))
+   :otherwise nil))
 
 (defn dois-in-file
   "Returns all the DOIs in a metadata dump file."
@@ -38,3 +38,4 @@
 	      :append true)
 	(recur (take 1000 dois) (drop 1000 dois))))))
 
+; e.g. (take 5000 (dois-in-dir "/Users/karl/Data/conf"))
