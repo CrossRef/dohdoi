@@ -29,8 +29,12 @@
 (defn write-dois-from-dir
   "Writes dois from deposit dump files in a dir to a file."
   [prefix in-dir out-file]
-  (spit out-file
-	(join \newline
-	      (map #(str prefix %)
-		   (dois-in-dir in-dir)))))
+  (let [dois (dois-in-dir in-dir)]
+    (loop [first-lot (take 1000 dois)
+	   rest-lot  (drop 1000 dois)]
+      (let [converted-dois (map #(str prefix %) first-lot)]
+	(spit out-file
+	      (join \newline converted-dois)
+	      :append true)
+	(recur (take 1000 dois) (drop 1000 dois))))))
 
