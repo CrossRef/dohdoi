@@ -36,6 +36,6 @@
 	(spit out-file
 	      (join \newline converted-dois)
 	      :append true)
-	(recur (take 1000 dois) (drop 1000 dois))))))
+	(recur (take 1000 rest-lot) (drop 1000 rest-lot))))))
 
 ; e.g. (take 5000 (dois-in-dir "/Users/karl/Data/conf"))
