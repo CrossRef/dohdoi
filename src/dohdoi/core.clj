@@ -1,19 +1,41 @@
 (ns dohdoi.core
   (:use clojure.java.io clojure.contrib.lazy-xml clojure.string))
 
+(defn doi-event?
+  [e]
+  (and (= (:type e) :start-element) (= (:name e) :doi)))
+
+(defn pub-event?
+  [e]
+  (and (= (:type e) :start-element) (= (:name e) :publication)))
+
+(defn events-to-pub-type
+  [events]
+  (if (and (seq events) (pub-event? (first events)))
+    (get-in (first events) [:attrs :pubType])
+    (recur (rest events))))
+
 (defn events-to-dois
   [events]
   (cond
    (seq events)
-     (let [type   (:type (first events))
-	   name   (:name (first events))
-	   is-doi (and (= :start-element type)
-		       (= :doi name))]
-       (if is-doi
-	 (lazy-seq (cons (:str (second events))
-			 (events-to-dois (rest events))))
-	 (recur (rest events))))
+   (if (doi-event? (first events))
+     (lazy-seq (cons (:str (second events))
+		     (events-to-dois (rest events))))
+     (recur (rest events)))
    :otherwise nil))
+
+(defn pub-in-file
+  "Return a list of maps representing publications."
+  [f]
+  (let [events (parse-seq (file f))]
+    {:type (events-to-pub-type events)
+     :dois (events-to-dois events)}))
+
+(defn pubs-in-dir
+  [d]
+  (let [file-list (map #(file d %) (.list (file d)))]
+    (map pub-in-file file-list)))
 
 (defn dois-in-file
   "Returns all the DOIs in a metadata dump file."
@@ -41,6 +63,6 @@
 ; e.g. (take 5000 (dois-in-dir "/Users/karl/Data/conf"))
 
 ; or
-; (write-doi-seq "http://ip-10-48-71-165.eu-west-1.compute.internal/"
-; 		 (take 100000 (dois-in-dir "/Users/karl/Data/conf"))
-;		 "/Users/karl/Data/100000.conf.urls.txt")
+; (write-doi-seq "http://ip-10-48-71-165.eu-west-1.compute.internal:9393/"
+; 		 (take 100000 (dois-in-dir "/Users/karl/Data/jor"))
+;		 "/Users/karl/Data/100000.jor.urls.txt")
