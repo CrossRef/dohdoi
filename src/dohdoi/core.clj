@@ -35,7 +35,7 @@
 (defn pubs-in-dir
   [d]
   (let [file-list (map #(file d %) (.list (file d)))]
-    (map pub-in-file file-list)))
+    (pmap pub-in-file file-list)))
 
 (defn dois-in-file
   "Returns all the DOIs in a metadata dump file."
