@@ -9,6 +9,14 @@
   [e]
   (and (= (:type e) :start-element) (= (:name e) :publication)))
 
+(defn chars-to-str
+  [e]
+  (apply str (map :str (take-while #(= (:type %) :characters) e))))
+
+(defn rest-after-chars
+  [e]
+  (drop-while #(= (:type %) :characters) e))
+
 (defn events-to-pub-type
   [events]
   (if (and (seq events) (pub-event? (first events)))
@@ -19,10 +27,11 @@
   [events]
   (cond
    (seq events)
-   (if (doi-event? (first events))
-     (lazy-seq (cons (:str (second events))
-		     (events-to-dois (rest events))))
-     (recur (rest events)))
+   (let [rem (rest events)]
+     (if (doi-event? (first events))
+       (lazy-seq (cons (chars-to-str rem)
+		       (events-to-dois (rest-after-chars rem))))
+       (recur rem)))
    :otherwise nil))
 
 (defn pub-in-file
@@ -40,6 +49,7 @@
 (defn dois-in-file
   "Returns all the DOIs in a metadata dump file."
   [f]
+  (prn (file f))
   (events-to-dois (parse-seq (file f))))
 
 (defn dois-in-dir
