@@ -22,7 +22,7 @@
 
 (defn update-hash-record
   [hash-record doi]
-  (let [dois (conj (:dois hash-record) doi)]
+  (let [dois (conj (set (:dois hash-record)) doi)]
     (assoc hash-record
       :count (count dois)
       :dois dois)))
