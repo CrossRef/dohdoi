@@ -1,7 +1,6 @@
 (ns dohdoi.core
-  (:use clojure.java.io clojure.contrib.lazy-xml
-	[clojure.string :as string])
-  (:import [java.security MessageDigest]))
+  (:use clojure.java.io clojure.contrib.lazy-xml)
+  (:require [clojure.string :as string]))
 
 (defn str-from-events
   [m]

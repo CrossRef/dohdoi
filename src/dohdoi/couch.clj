@@ -1,5 +1,8 @@
 (ns dohdoi.couch
-  (:use somnium.congomongo))
+  (:use somnium.congomongo
+	clojure.java.io)
+  (:require [clojure.string :as string])
+  (:import [java.security MessageDigest]))
 
 ;; 1. take md5, lo 8 bits, high 8 bits, to_i().to_s(34) each.
 ;; 2. if any in DB, add dois to db for the hash.
@@ -12,7 +15,10 @@
 ;; Doi
 ;; id hash_id doi
 
-(mongo! :db "doi-hash")
+(mongo! :host "127.0.0.1" :port 27017 :db "doi-hash")
+
+(add-index! :hashes [:hash])
+(add-index! :hashes [:count])
 
 (defn update-hash-record
   [hash-record doi]
@@ -41,10 +47,10 @@
 (defn add-doi
   [doi]
   (let [hash (doi-hash doi)
-	record (fetch-one hash)]
+	record (fetch-one :hashes :where {:hash hash})]
     (if record
-      (update! hash record (update-hash-record record doi))
-      (insert! hash (create-hash-record hash doi)))))
+      (update! :hashes record (update-hash-record record doi))
+      (insert! :hashes (create-hash-record hash doi)))))
     
 (defn add-dois-from-file
   [file]
