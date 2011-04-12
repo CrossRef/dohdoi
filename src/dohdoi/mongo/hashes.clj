@@ -1,5 +1,6 @@
-(ns dohdoi.couch
+(ns dohdoi.mongo.hashes
   (:use somnium.congomongo
+        dohdoi.mongo.conf
 	clojure.java.io)
   (:require [clojure.string :as string])
   (:import [java.security MessageDigest]))

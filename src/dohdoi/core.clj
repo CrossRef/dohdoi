@@ -63,7 +63,7 @@
 (defn dois-in-dir
   "Returns all the DOIs in all metadata dump files in a dir."
   [d]
-  (let [file-list (shuffle (map #(file d %) (.list (file d))))]
+  (let [file-list (map #(file d %) (.list (file d)))]
     (mapcat dois-in-file file-list)))
 
 (defn write-doi-seq
@@ -73,7 +73,7 @@
 	 rest-lot  doi-seq]
     (let [converted-dois (map #(str prefix %) first-lot)]
       (spit out-file
-	    (str (join \newline converted-dois) \newline)
+	    (str (string/join \newline converted-dois) \newline)
 	    :append true)
       (if (seq rest-lot)
 	(recur (take 1000 rest-lot) (drop 1000 rest-lot))))))
@@ -84,3 +84,21 @@
 ;; (write-doi-seq "http://ip-10-48-71-165.eu-west-1.compute.internal:9393/"
 ;; 		 (take 100000 (dois-in-dir "/Users/karl/Data/jor"))
 ;;		 "/Users/karl/Data/100000.jor.urls.txt")
+
+(defn report
+  "Expects a Reportable to be returned by task. Such
+   as a string or a report map."
+  [task]
+  ())
+
+;; 1. Detect runs of text.
+;; 2. Detect blocks of text.
+;; 3. Detect sections and possibly their headers.
+;; 4. Classify sections as bibliographic / non-bibliographic
+;; 5. Parse bibliographc section
+
+;; Methods
+
+;; OCR techniques for text runs and text blocks.
+;; Document classification and bayesian filtering.
+;; Detect names and known publication names in bibliographic data.
