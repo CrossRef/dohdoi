@@ -1,11 +1,16 @@
 (ns dohdoi.mongo.mds
   (:use somnium.congomongo
         dohdoi.mongo.conf
-        dohdoi.unixref)
+        dohdoi.unixref
+        clojure.java.io)
   (:require [clojure.contrib.str-utils :as su])
   (:import [java.security MessageDigest]))
 
 (mongo! :host mongo-host :port mongo-port :db "md")
+
+(add-index! :dois [:doi])
+(add-index! :dois [:citation-id])
+(add-index! :dois [:owner-prefix])
 
 (defrecord Doi [doi hash prefix citation-id owner-prefix citations links])
 
@@ -41,5 +46,19 @@
 
 (defn store-publication!
   [publication]
-  (doseq [doi (publication->dois publication)]
-    (insert! :dois doi)))
+  (doseq [doi-record (publication->dois publication)]
+    (let [existing-doi-record (fetch-one :dois :where {:doi (:doi doi-record)})]
+      (if existing-doi-record
+        (update! :dois existing-doi-record (merge existing-doi-record doi-record))
+        (insert! :dois doi-record)))))
+
+(defn store-unixref!
+  [filename]
+  (store-publication! (unixref->publication filename)))
+
+(defn store-directory!
+  [directory-name]
+  (let [dir (file directory-name)
+        files (map #(file dir %) (.list dir))]
+    (doseq [unixref-file files]
+      (store-publication! (unixref->publication unixref-file)))))
