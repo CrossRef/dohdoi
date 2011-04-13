@@ -5,7 +5,9 @@
 
 (mongo! :host mongo-host :port mongo-port :db "md")
 
-(defrecord Doi [doi hash prefix owner-prefix citations])
+(defrecord Doi [doi hash prefix owner-prefix citations links])
+
+(defrecord Link [type url])
 
 (defn doi-hash
   [doi]
@@ -19,6 +21,10 @@
 	(.toString 36))))
 
 (defn make-doi
-  [doi owner-prefix]
-  (Doi. doi (doi-hash doi) (first (re-split #"/" doi)) owner-prefix []))
+  [doi owner-prefix & {links :links citations :citations}]
+  (Doi. doi (doi-hash doi) (first (re-split #"/" doi)) owner-prefix [] []))
+
+(defn store-publication!
+  [publication]
+  ())
 
