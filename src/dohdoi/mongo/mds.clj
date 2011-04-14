@@ -44,7 +44,7 @@
                   (:owner %))
        (get-in publication [:dois])))
 
-(defn store-publication!
+(defn store-publication
   [publication]
   (doseq [doi-record (publication->dois publication)]
     (let [existing-doi-record (fetch-one :dois :where {:doi (:doi doi-record)})]
@@ -52,13 +52,12 @@
         (update! :dois existing-doi-record (merge existing-doi-record doi-record))
         (insert! :dois doi-record)))))
 
-(defn store-unixref!
+(defn store-unixref
   [filename]
-  (store-publication! (unixref->publication filename)))
+  (store-publication (unixref->publication filename)))
 
-(defn store-directory!
+(defn store-directory
   [directory-name]
   (let [dir (file directory-name)
         files (map #(file dir %) (.list dir))]
-    (doseq [unixref-file files]
-      (store-publication! (unixref->publication unixref-file)))))
+    (doseq [unixref-file files] (store-unixref unixref-file))))
